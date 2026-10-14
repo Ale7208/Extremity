@@ -1,16 +1,127 @@
+'use client'
+
+import { useMemo, useState } from 'react'
+
+type Player = {
+  rank: number
+  name: string
+  points: number
+  records: number
+  best: string
+}
+
+const players: Player[] = [
+  { rank: 1, name: 'Kairo', points: 9820, records: 18, best: 'Acheron' },
+  { rank: 2, name: 'zNick', points: 9140, records: 16, best: 'Slaughterhouse' },
+  { rank: 3, name: 'Noxious', points: 8650, records: 15, best: 'Sonic Wave' },
+  { rank: 4, name: 'Luma', points: 7430, records: 13, best: 'Artificial Ascent' },
+  { rank: 5, name: 'Jex', points: 6880, records: 11, best: 'Black Blizzard' },
+  { rank: 6, name: 'Vex', points: 6120, records: 10, best: 'Cataclysm' },
+  { rank: 7, name: 'Orion', points: 5540, records: 9, best: 'Digital Descent' },
+  { rank: 8, name: 'Miko', points: 4890, records: 8, best: 'Windy Landscape' },
+  { rank: 9, name: 'Riven', points: 4310, records: 7, best: 'Nine Circles' },
+  { rank: 10, name: 'Taro', points: 3970, records: 6, best: 'Acropolis' },
+]
+
+const recentRecords = [
+  { player: 'Kairo', level: 'Acheron', progress: '100%', date: '2 hours ago' },
+  { player: 'Luma', level: 'Artificial Ascent', progress: '100%', date: '5 hours ago' },
+  { player: 'Orion', level: 'Digital Descent', progress: '86%', date: 'Yesterday' },
+  { player: 'zNick', level: 'Slaughterhouse', progress: '100%', date: 'Yesterday' },
+]
+
 export default function Home() {
+  const [query, setQuery] = useState('')
+  const [page, setPage] = useState(1)
+  const filteredPlayers = useMemo(
+    () => players.filter((player) => player.name.toLowerCase().includes(query.toLowerCase())),
+    [query],
+  )
+
   return (
-    <div className="flex min-h-screen items-center justify-center font-sans">
-      <main className="flex w-full max-w-3xl flex-col items-center gap-8 px-6 py-16 text-center sm:items-start sm:text-left">
-        <div className="flex flex-col gap-4">
-          <h1 className="text-4xl font-bold tracking-tight">
-            6B Players Rankings
-          </h1>
-          <p className="max-w-md text-lg text-muted-foreground">
-            To get started, send a prompt or modify this page directly.
-          </p>
-        </div>
+    <div className="min-h-screen bg-[#080808] text-[#f1f1f1]">
+      <header className="border-b border-[#292929] bg-[#0b0b0b]">
+        <nav className="mx-auto flex min-h-12 max-w-[1180px] items-center justify-between gap-6 px-4 sm:px-6" aria-label="Main navigation">
+          <a href="#top" className="whitespace-nowrap text-[13px] font-semibold tracking-tight text-white">6B <span className="text-[#b22222]">Demon List</span></a>
+          <div className="flex items-center gap-4 overflow-x-auto text-[11px] text-[#898989] sm:gap-7">
+            <a className="whitespace-nowrap transition-colors hover:text-white" href="#leaderboard">Leaderboard</a>
+            <a className="whitespace-nowrap transition-colors hover:text-white" href="#players">Players</a>
+            <a className="whitespace-nowrap transition-colors hover:text-white" href="#submit">Submit Record</a>
+            <a className="whitespace-nowrap transition-colors hover:text-white" href="#about">About</a>
+          </div>
+        </nav>
+      </header>
+
+      <main id="top" className="mx-auto max-w-[1180px] px-4 pb-14 pt-7 sm:px-6 sm:pt-9">
+        <section className="mb-5">
+          <p className="mb-1 text-[10px] uppercase tracking-[0.18em] text-[#b22222]">Season 04 / Updated daily</p>
+          <h1 className="text-[21px] font-semibold tracking-[-0.02em] text-white">6B Demon List</h1>
+          <p className="mt-1 text-[12px] text-[#777]">Class 6B Geometry Dash Rankings</p>
+        </section>
+
+        <section id="leaderboard" aria-labelledby="leaderboard-title">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
+            <h2 id="leaderboard-title" className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#a5a5a5]">Global leaderboard</h2>
+            <label className="flex h-7 w-full items-center border border-[#303030] bg-[#111] px-2.5 text-[11px] text-[#666] sm:w-52">
+              <span className="mr-2 text-[#8d2929]" aria-hidden="true">/</span>
+              <span className="sr-only">Search players</span>
+              <input value={query} onChange={(event) => { setQuery(event.target.value); setPage(1) }} placeholder="Search players" className="min-w-0 flex-1 bg-transparent text-[#ddd] outline-none placeholder:text-[#555]" />
+            </label>
+          </div>
+
+          <div className="overflow-x-auto border border-[#292929] bg-[#111]">
+            <table className="w-full min-w-[600px] border-collapse text-left text-[12px]">
+              <thead className="border-b border-[#292929] bg-[#151515] text-[10px] uppercase tracking-[0.12em] text-[#686868]">
+                <tr>
+                  <th className="w-16 px-4 py-2.5 font-medium">Rank</th>
+                  <th className="px-4 py-2.5 font-medium">Player</th>
+                  <th className="px-4 py-2.5 font-medium">Best record</th>
+                  <th className="px-4 py-2.5 text-right font-medium">Points</th>
+                  <th className="w-24 px-4 py-2.5 text-right font-medium">Records</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredPlayers.map((player) => (
+                  <tr key={player.rank} className={`border-b border-[#242424] last:border-0 hover:bg-[#181818] ${player.rank <= 3 ? 'bg-[#141010]' : ''}`}>
+                    <td className={`px-4 py-3 font-mono ${player.rank <= 3 ? 'font-semibold text-[#b22222]' : 'text-[#777]'}`}>{String(player.rank).padStart(2, '0')}</td>
+                    <td className="px-4 py-3 font-medium text-[#ededed]">{player.name}</td>
+                    <td className="px-4 py-3 text-[#8c8c8c]">{player.best}</td>
+                    <td className="px-4 py-3 text-right font-mono text-[#dedede]">{player.points.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-right font-mono text-[#858585]">{player.records}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {filteredPlayers.length === 0 && <p className="px-4 py-8 text-center text-[12px] text-[#666]">No players found.</p>}
+          </div>
+
+          <div className="flex items-center justify-between border-x border-b border-[#292929] bg-[#0e0e0e] px-3 py-2 text-[10px] text-[#656565]">
+            <span>Showing {filteredPlayers.length ? '1–10' : '0'} of {filteredPlayers.length || 0} players</span>
+            <div className="flex items-center gap-1" aria-label="Pagination">
+              <button onClick={() => setPage(Math.max(1, page - 1))} className="border border-[#292929] px-2 py-1 text-[#777] hover:border-[#555] hover:text-white" aria-label="Previous page">←</button>
+              <button className="border border-[#7e2020] bg-[#351313] px-2.5 py-1 text-[#e8b4b4]" aria-current="page">{page}</button>
+              <button onClick={() => setPage(page + 1)} className="border border-[#292929] px-2 py-1 text-[#777] hover:border-[#555] hover:text-white" aria-label="Next page">→</button>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-8 max-w-[760px]" aria-labelledby="recent-title">
+          <div className="mb-2 flex items-center justify-between border-b border-[#292929] pb-2">
+            <h2 id="recent-title" className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#a5a5a5]">Recently approved records</h2>
+            <span className="text-[10px] text-[#5f5f5f]">Last 48 hours</span>
+          </div>
+          <ul className="divide-y divide-[#242424] border-b border-[#292929]">
+            {recentRecords.map((record) => (
+              <li key={`${record.player}-${record.level}`} className="grid grid-cols-[1fr_auto] gap-3 py-2.5 text-[11px] sm:grid-cols-[115px_1fr_80px_90px]">
+                <span className="font-medium text-[#ddd]">{record.player}</span>
+                <span className="text-[#999]">{record.level}</span>
+                <span className="text-[#b22222]">{record.progress}</span>
+                <span className="text-right text-[#5f5f5f]">{record.date}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
       </main>
     </div>
-  );
+  )
 }
