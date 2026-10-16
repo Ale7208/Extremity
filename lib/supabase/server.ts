@@ -38,7 +38,7 @@ export async function createClient() {
  * this gracefully (return 500 or empty data).
  */
 export function createAdminClient() {
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const serviceRoleKey = process.env.EXTREMITY_SERVICE_ROLE_KEY
   if (!serviceRoleKey) return null
   return createJsClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
