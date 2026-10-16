@@ -11,6 +11,7 @@ const nextConfig = {
   },
   webpack: (config) => {
     config.cache = false;
+    config.parallelism = 1;
     return config;
   },
 }
