@@ -5,7 +5,10 @@
 Stores Geometry Dash identity claims and their verification status.
 Each Extremity user can have exactly one GD identity linked to their account.
 
-## New Table: gd_identities
+## Extension required
+Uses gen_random_bytes() for token generation, which requires pgcrypto.
+
+## Table: gd_identities
 | Column               | Type         | Default    | Description                                         |
 |----------------------|--------------|------------|-----------------------------------------------------|
 | id                   | uuid (PK)    | gen_random |                                                     |
@@ -20,48 +23,50 @@ Each Extremity user can have exactly one GD identity linked to their account.
 | created_at           | timestamptz  | now()      |                                                     |
 | updated_at           | timestamptz  | now()      |                                                     |
 
-## Unique Constraint
+## Unique constraint
 Partial unique index on gd_player_id WHERE verification_status IN ('pending','verified'):
 - Prevents two Extremity accounts from claiming the same GD account simultaneously.
 - A rejected claim frees the GD player ID for another user to claim.
 
-## RLS Policies
+## RLS + Column-level privileges
 
 ### gd_identities — CRITICAL SECURITY
-- SELECT: a user can read ONLY their own identity row. Admin can read all.
-  The public (anon) has NO access — GD IDs and verification tokens are private.
-- INSERT: authenticated user creates ONLY their own row, with status = 'pending'.
-  The user CANNOT set verification_status to anything other than 'pending'.
-  The user CANNOT set verified_at, verified_by, or notes.
-- UPDATE (user scope): the user can update ONLY gd_player_id, gd_player_name,
-  and verification_token on their OWN row — and ONLY while status = 'pending'.
-  Changing these fields resets the identity to pending (handled by trigger).
-  The user CANNOT touch verification_status, verified_at, verified_by, or notes.
-- UPDATE (admin scope): admin can update verification_status, verified_at,
-  verified_by, and notes on any row.
-- DELETE: admin only.
-
-## Column-level privileges (defense in depth)
-- The `notes`, `verified_at`, `verified_by` columns are NOT selectable by
-  non-admin users. A user sees their own gd_player_id, gd_player_name,
-  verification_token, verification_status, created_at, updated_at — nothing else.
+- SELECT: user reads ONLY their own row. Admin reads all. anon: NO access.
+  Granted columns to authenticated: (id, user_id, gd_player_id, gd_player_name,
+  verification_token, verification_status, created_at, updated_at).
+  The columns verified_at, verified_by, notes are NOT granted to authenticated.
+  Admin must use the service role key (server-side) to read those columns.
+- INSERT: authenticated user creates own row, status = 'pending'.
+  Granted columns: (user_id, gd_player_id, gd_player_name, verification_token).
+  verification_status defaults to 'pending'; verified_at, verified_by, notes
+  default to NULL — user cannot set them.
+- UPDATE: two RLS policies (user scope and admin scope), both TO authenticated.
+  Granted columns: (gd_player_id, gd_player_name, verification_token,
+  verification_status, verified_at, verified_by, notes).
+  RLS is the guard: user-scope requires auth.uid() = user_id AND status = 'pending';
+  admin-scope requires is_admin(). The GRANT allows both, RLS distinguishes.
+- DELETE: admin only (RLS).
 
 ## Trigger: reset verification on identity change
-When a user changes their gd_player_id or gd_player_name, a BEFORE UPDATE
-trigger resets verification_status to 'pending', clears verified_at and
-verified_by, and generates a new verification_token. This ensures that
-changing identity always requires re-verification.
+A BEFORE UPDATE trigger fires on ALL updates. The function:
+- Always sets NEW.updated_at := now().
+- Only resets verification (status to 'pending', clears verified_at/verified_by,
+  generates new token) when gd_player_id or gd_player_name actually changed.
+This ensures updated_at is current for both user and admin actions.
 
 ## Why a user cannot self-verify
-1. The INSERT policy forces status = 'pending'.
-2. The user-scoped UPDATE policy only allows changing gd_player_id,
-   gd_player_name, verification_token — NOT verification_status.
-3. The admin-scoped UPDATE policy requires is_admin().
-4. Column-level GRANT restricts which columns each role can write.
-5. The trigger resets status to 'pending' on any identity data change.
+1. INSERT policy forces status = 'pending'.
+2. User-scoped UPDATE WITH CHECK forces status = 'pending'.
+3. GRANT INSERT does not include verification_status (defaults to 'pending').
+4. GRANT INSERT does not include verified_at, verified_by, notes (defaults to NULL).
+5. Trigger resets status to 'pending' on identity data change.
+6. Only admin-scope UPDATE policy (is_admin()) allows changing verification_status.
 
 ## No demo data inserted.
 */
+
+-- Ensure pgcrypto is available for gen_random_bytes()
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 CREATE TABLE IF NOT EXISTS public.gd_identities (
   id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -88,6 +93,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_gd_identities_active_player
 
 -- ──────────────────────────────────────────────
 -- Trigger function: reset verification on identity data change
+-- Fires on ALL UPDATEs; only resets when identity fields actually changed.
 -- ──────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION public.reset_gd_verification()
 RETURNS trigger
@@ -96,23 +102,26 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  -- Only reset if the user changed their GD identity data
+  -- Always update updated_at
+  NEW.updated_at := now();
+
+  -- Only reset verification if the user changed their GD identity data
   IF NEW.gd_player_id IS DISTINCT FROM OLD.gd_player_id
      OR NEW.gd_player_name IS DISTINCT FROM OLD.gd_player_name THEN
     NEW.verification_status := 'pending';
     NEW.verified_at := NULL;
     NEW.verified_by := NULL;
-    -- Generate a new random token (8 chars, alphanumeric)
+    -- Generate a new random token (8 chars, hex)
     NEW.verification_token := upper(substr(encode(gen_random_bytes(6), 'hex'), 1, 8));
   END IF;
-  NEW.updated_at := now();
+
   RETURN NEW;
 END;
 $$;
 
 DROP TRIGGER IF EXISTS trg_reset_gd_verification ON public.gd_identities;
 CREATE TRIGGER trg_reset_gd_verification
-  BEFORE UPDATE OF gd_player_id, gd_player_name ON public.gd_identities
+  BEFORE UPDATE ON public.gd_identities
   FOR EACH ROW
   EXECUTE FUNCTION public.reset_gd_verification();
 
@@ -144,7 +153,7 @@ CREATE POLICY "insert_own_gd_identity"
   );
 
 -- ──────────────────────────────────────────────
--- UPDATE (user scope): only identity fields, only while pending
+-- UPDATE (user scope): only while pending
 -- ──────────────────────────────────────────────
 DROP POLICY IF EXISTS "user_update_own_gd_identity" ON public.gd_identities;
 CREATE POLICY "user_update_own_gd_identity"
@@ -157,7 +166,7 @@ CREATE POLICY "user_update_own_gd_identity"
   );
 
 -- ──────────────────────────────────────────────
--- UPDATE (admin scope): verification fields only
+-- UPDATE (admin scope): verification fields
 -- ──────────────────────────────────────────────
 DROP POLICY IF EXISTS "admin_update_gd_identity" ON public.gd_identities;
 CREATE POLICY "admin_update_gd_identity"
@@ -177,26 +186,27 @@ CREATE POLICY "admin_delete_gd_identity"
 
 -- ──────────────────────────────────────────────
 -- Column-level privileges
+-- Only safe columns are granted to authenticated.
+-- Admin uses service role key (server-side) for sensitive columns.
 -- ──────────────────────────────────────────────
 REVOKE ALL ON public.gd_identities FROM anon, authenticated;
 
--- Users can read their own public-ish columns
+-- Users can read their own safe columns (RLS restricts to own row)
 GRANT SELECT (id, user_id, gd_player_id, gd_player_name, verification_token, verification_status, created_at, updated_at)
   ON public.gd_identities TO authenticated;
 
--- Users can insert only the identity fields (not verification fields)
+-- Users can insert only identity fields
+-- verification_status defaults to 'pending', verified_at/by/notes default to NULL
 GRANT INSERT (user_id, gd_player_id, gd_player_name, verification_token)
   ON public.gd_identities TO authenticated;
 
--- Users can update only identity fields
-GRANT UPDATE (gd_player_id, gd_player_name, verification_token)
+-- UPDATE: both user and admin columns granted to authenticated.
+-- RLS distinguishes: user-scope requires auth.uid()=user_id AND status='pending';
+-- admin-scope requires is_admin().
+GRANT UPDATE (gd_player_id, gd_player_name, verification_token, verification_status, verified_at, verified_by, notes)
   ON public.gd_identities TO authenticated;
 
--- Admin gets full access to all columns
-GRANT SELECT (id, user_id, gd_player_id, gd_player_name, verification_token, verification_status, verified_at, verified_by, notes, created_at, updated_at)
-  ON public.gd_identities TO authenticated;
-GRANT UPDATE (verification_status, verified_at, verified_by, notes)
-  ON public.gd_identities TO authenticated;
+-- DELETE: admin only via RLS
 GRANT DELETE ON public.gd_identities TO authenticated;
 
 -- ──────────────────────────────────────────────

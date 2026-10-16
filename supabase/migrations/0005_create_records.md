@@ -1,12 +1,15 @@
 /*
-# Migration 0005 — records table
+# Migration 0005 — records table + level proposal promotion trigger
 
 ## Purpose
 Stores record submissions. Each record links a player (profile) to a level
 (either a published level or a pending level proposal) with a progress
 percentage and a moderation status.
 
-## New Table: records
+Also creates the promote_level_proposal() trigger that was deferred from
+migration 0004, since it references this table.
+
+## Table: records
 | Column              | Type         | Default    | Description                                           |
 |---------------------|--------------|------------|-------------------------------------------------------|
 | id                  | uuid (PK)    | gen_random |                                                       |
@@ -22,63 +25,68 @@ percentage and a moderation status.
 | created_at          | timestamptz  | now()      |                                                       |
 
 ## CHECK constraint: exactly one level reference
-```sql
-CHECK (
-  (level_id IS NOT NULL AND level_proposal_id IS NULL)
-  OR
-  (level_id IS NULL AND level_proposal_id IS NOT NULL)
-)
-```
+(level_id IS NOT NULL AND level_proposal_id IS NULL)
+OR (level_id IS NULL AND level_proposal_id IS NOT NULL)
 
 ## Anti-duplicate index
-Partial unique index on (player_id, level_id, progress) WHERE status = 'pending':
-- Prevents a user from submitting the same record twice while the first
-  is still pending.
-- Once a record is approved or rejected, the same combination can be
-  submitted again (e.g., after rejection with improved evidence).
+Partial unique index on (player_id, COALESCE(level_id, level_proposal_id), progress)
+WHERE status = 'pending'. Prevents duplicate pending submissions.
 
-## RLS Policies
+## RLS + Column-level privileges
 
 ### records
-- SELECT (public): anon + authenticated read ONLY approved records, and
-  ONLY public columns (id, player_id, level_id, progress, evidence_url,
-  created_at). Notes, status, reviewer_id, reviewed_at, level_proposal_id
-  are hidden via column-level privileges.
-- SELECT (admin): reads all records, all columns.
+- SELECT (public): anon + authenticated read ONLY approved records.
+  Granted columns: (id, player_id, level_id, progress, evidence_url, created_at).
+  notes, status, reviewer_id, reviewed_at, level_proposal_id are NOT granted.
+  Admin uses service role key for those columns.
 - INSERT: authenticated user with:
   - auth.uid() = player_id (cannot submit as another player)
   - status = 'pending' (cannot self-approve)
   - GD identity verified (EXISTS check on gd_identities)
   - Not suspended (NOT EXISTS check on profiles.suspended)
-  - Admin cannot approve their own records: the INSERT policy for admin
-    self-records is the same as for regular users — admin records also
-    start as pending. The approval constraint is enforced in the UPDATE
-    policy (see below).
-- UPDATE: admin ONLY, with a critical restriction — the admin cannot
-  approve a record where player_id matches their own auth.uid(). This is
-  enforced at the RLS level, not just in the UI.
-- DELETE: admin ONLY, with the same self-record restriction.
+  Granted columns: (player_id, level_id, level_proposal_id, progress, evidence_url).
+  status defaults to 'pending', notes/reviewer_id/reviewed_at default to NULL.
+- UPDATE: admin ONLY, CANNOT approve own records.
+  Granted columns: (progress, evidence_url, notes, status, reviewer_id, reviewed_at).
+  RLS USING clause: is_admin() AND player_id <> auth.uid().
+- DELETE: admin ONLY, same self-record restriction.
 
 ## Self-approval prevention (database-enforced)
 
 The UPDATE and DELETE policies include:
-```sql
-USING (
-  public.is_admin()
-  AND player_id::text <> auth.uid()::text
-)
-```
+  player_id::text <> auth.uid()::text
 
-This means: even if the admin's RLS allows UPDATE on records, the policy
-rejects any UPDATE or DELETE where the admin is the record's player. The
-admin literally cannot approve their own records through the Supabase API,
-regardless of what the UI shows.
+player_id references profiles(id), and profiles.id = auth.users.id (enforced
+at profile creation via INSERT policy auth.uid() = id). So player_id for a
+user's records equals their auth.uid(). The comparison is correct.
 
-If the admin is also a player and needs their records approved, a second
-moderator is required. That second moderator must also have
-app_metadata.role = 'admin' (set via Supabase dashboard). The second admin
-can then approve the first admin's records because their auth.uid() differs
-from the record's player_id.
+If the admin is also a player, a second admin (different auth.uid()) must
+approve their records. The second admin is configured via Supabase dashboard
+(raw_app_meta_data role = 'admin').
+
+## Trigger: promote_level_proposal (deferred from migration 0004)
+
+Created here because it references the records table. Fires BEFORE UPDATE OF
+status ON level_proposals. When status transitions to 'approved':
+1. INSERTs a new level (published = false, points = 0, difficulty = 'Unrated').
+2. UPDATEs records referencing this proposal to point to the new level.
+3. Sets reviewed_by and reviewed_at if not already set.
+
+SECURITY DEFINER is required because the function INSERTs into levels and
+UPDATEs records, which would be blocked by RLS for the calling user. The
+function runs as the table owner (supabase_admin) with BYPASSRLS.
+
+Security of the trigger:
+- Only fires when status changes to 'approved' (condition: NEW.status = 'approved'
+  AND OLD.status IS DISTINCT FROM 'approved').
+- Only admin can UPDATE level_proposals (RLS admin_update_proposals checks
+  is_admin()). Non-admin UPDATEs are rejected by RLS before the trigger fires.
+- The new level is created with published = false (not visible to public).
+- Records are relinked but remain 'pending' (not auto-approved).
+- The UPDATE on records only changes level_id and level_proposal_id, never
+  status — so the self-approval constraint is not bypassed.
+- Re-approving an already-approved proposal fails due to UNIQUE on
+  levels.gd_level_id — acceptable since the level already exists.
 
 ## No demo data inserted.
 */
@@ -149,6 +157,7 @@ CREATE POLICY "insert_own_pending_record"
 
 -- ──────────────────────────────────────────────
 -- UPDATE: admin only, CANNOT approve own records
+-- player_id references profiles(id) which equals auth.users(id)
 -- ──────────────────────────────────────────────
 DROP POLICY IF EXISTS "admin_update_records" ON public.records;
 CREATE POLICY "admin_update_records"
@@ -177,6 +186,8 @@ CREATE POLICY "admin_delete_records"
 
 -- ──────────────────────────────────────────────
 -- Column-level privileges
+-- Only public columns granted to authenticated and anon.
+-- Admin uses service role key for sensitive columns.
 -- ──────────────────────────────────────────────
 REVOKE ALL ON public.records FROM anon, authenticated;
 
@@ -184,14 +195,61 @@ REVOKE ALL ON public.records FROM anon, authenticated;
 GRANT SELECT (id, player_id, level_id, progress, evidence_url, created_at)
   ON public.records TO anon, authenticated;
 
--- Authenticated (admin) gets full column access
-GRANT SELECT (id, player_id, level_id, level_proposal_id, progress, evidence_url, notes, status, reviewer_id, reviewed_at, created_at)
+-- INSERT: only user-settable columns
+-- status defaults to 'pending', notes/reviewer_id/reviewed_at default to NULL
+GRANT INSERT (player_id, level_id, level_proposal_id, progress, evidence_url)
   ON public.records TO authenticated;
-GRANT INSERT (player_id, level_id, level_proposal_id, progress, evidence_url, created_at)
-  ON public.records TO authenticated;
+
+-- UPDATE: admin fields (RLS restricts to admin AND non-own records)
 GRANT UPDATE (progress, evidence_url, notes, status, reviewer_id, reviewed_at)
   ON public.records TO authenticated;
+
+-- DELETE: admin only via RLS
 GRANT DELETE ON public.records TO authenticated;
+
+-- ──────────────────────────────────────────────
+-- Trigger: promote_level_proposal (deferred from migration 0004)
+-- Created here because it references the records table.
+-- ──────────────────────────────────────────────
+CREATE OR REPLACE FUNCTION public.promote_level_proposal()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  new_level_id uuid;
+BEGIN
+  -- Only act when status transitions to 'approved'
+  IF NEW.status = 'approved' AND (OLD.status IS DISTINCT FROM 'approved') THEN
+    -- Insert the new level (published = false, points = 0, difficulty = 'Unrated')
+    INSERT INTO public.levels (name, gd_level_id)
+    VALUES (NEW.name, NEW.gd_level_id)
+    RETURNING id INTO new_level_id;
+
+    -- Relink records from this proposal to the new level
+    UPDATE public.records
+    SET level_id = new_level_id,
+        level_proposal_id = NULL
+    WHERE level_proposal_id = NEW.id;
+
+    -- Set reviewed_by and reviewed_at if not already set
+    IF NEW.reviewed_by IS NULL THEN
+      NEW.reviewed_by := auth.uid();
+    END IF;
+    IF NEW.reviewed_at IS NULL THEN
+      NEW.reviewed_at := now();
+    END IF;
+  END IF;
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_promote_level_proposal ON public.level_proposals;
+CREATE TRIGGER trg_promote_level_proposal
+  BEFORE UPDATE OF status ON public.level_proposals
+  FOR EACH ROW
+  EXECUTE FUNCTION public.promote_level_proposal();
 
 -- ──────────────────────────────────────────────
 -- Indexes

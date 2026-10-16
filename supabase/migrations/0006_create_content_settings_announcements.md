@@ -6,7 +6,7 @@
 - site_settings: internal configuration key-value pairs.
 - announcements: news banners shown to visitors.
 
-## New Tables
+## Tables
 
 ### site_content
 | Column      | Type         | Default | Description                                   |
@@ -19,7 +19,7 @@
 ### site_settings
 | Column      | Type         | Default | Description                                   |
 |-------------|--------------|---------|-----------------------------------------------|
-| key         | text (PK)    | —       | 'admin_user_id', etc.                         |
+| key         | text (PK)    | —       | Internal config keys                          |
 | value       | text         | —       | Setting value                                 |
 | updated_at  | timestamptz  | now()   |                                               |
 
@@ -34,7 +34,7 @@
 | sort_order    | integer      | 0                | Manual ordering                           |
 | created_at    | timestamptz  | now()            |                                           |
 
-## RLS Policies
+## RLS + Column-level privileges
 
 ### site_content
 - SELECT (public): published content only.
@@ -175,6 +175,40 @@ CREATE POLICY "admin_delete_announcements"
   ON public.announcements FOR DELETE
   TO authenticated
   USING (public.is_admin());
+
+-- ──────────────────────────────────────────────
+-- Column-level privileges (defense in depth)
+-- ──────────────────────────────────────────────
+
+-- site_content: public reads published rows, all columns are non-sensitive
+REVOKE ALL ON public.site_content FROM anon, authenticated;
+GRANT SELECT (key, value, published, updated_at)
+  ON public.site_content TO anon, authenticated;
+GRANT INSERT (key, value, published)
+  ON public.site_content TO authenticated;
+GRANT UPDATE (key, value, published)
+  ON public.site_content TO authenticated;
+GRANT DELETE ON public.site_content TO authenticated;
+
+-- site_settings: admin only, no public access
+REVOKE ALL ON public.site_settings FROM anon, authenticated;
+GRANT SELECT (key, value, updated_at)
+  ON public.site_settings TO authenticated;
+GRANT INSERT (key, value)
+  ON public.site_settings TO authenticated;
+GRANT UPDATE (key, value)
+  ON public.site_settings TO authenticated;
+GRANT DELETE ON public.site_settings TO authenticated;
+
+-- announcements: public reads published rows
+REVOKE ALL ON public.announcements FROM anon, authenticated;
+GRANT SELECT (id, title, body, published, published_at, sort_order, created_at)
+  ON public.announcements TO anon, authenticated;
+GRANT INSERT (title, body, published, published_at, sort_order)
+  ON public.announcements TO authenticated;
+GRANT UPDATE (title, body, published, published_at, sort_order)
+  ON public.announcements TO authenticated;
+GRANT DELETE ON public.announcements TO authenticated;
 
 -- ──────────────────────────────────────────────
 -- Indexes

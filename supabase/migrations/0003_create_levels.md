@@ -2,25 +2,25 @@
 # Migration 0003 — levels table
 
 ## Purpose
-Stores demon levels that have been reviewed and published by the admin.
+Stores demon levels reviewed and published by the admin.
 
-## New Table: levels
-| Column       | Type         | Default          | Description                                        |
-|--------------|--------------|------------------|----------------------------------------------------|
-| id           | uuid (PK)    | gen_random_uuid()|                                                    |
-| name         | text NOT NULL| —                | Level name                                         |
-| gd_level_id  | integer UNIQUE | —              | GD level ID. Prevents duplicates.                 |
-| difficulty   | text         | 'Unrated'        | Assigned manually by admin                         |
-| points       | integer      | 0                | Points for 100% completion. Admin-configured.      |
-| published    | boolean      | false            | Admin toggles public visibility                    |
-| created_at   | timestamptz  | now()            |                                                    |
+## Table: levels
+| Column       | Type            | Default          | Description                                        |
+|--------------|-----------------|------------------|----------------------------------------------------|
+| id           | uuid (PK)       | gen_random_uuid()|                                                    |
+| name         | text NOT NULL   | —                | Level name                                         |
+| gd_level_id  | integer UNIQUE  | —                | GD level ID. Prevents duplicates.                  |
+| difficulty   | text            | 'Unrated'        | Assigned manually by admin                         |
+| points       | integer         | 0                | Points for 100% completion. Admin-configured.      |
+| published    | boolean         | false            | Admin toggles public visibility                    |
+| created_at   | timestamptz     | now()            |                                                    |
 
-## RLS Policies
-
-### levels
-- SELECT: public reads only published levels. Admin reads all.
-- INSERT / UPDATE / DELETE: admin ONLY.
-  Users cannot create, publish, or modify levels or their points/difficulty.
+## RLS + Column-level privileges
+- SELECT: public reads only published levels (RLS). Admin reads all.
+  All columns granted to anon + authenticated (no sensitive columns in levels).
+- INSERT / UPDATE / DELETE: admin ONLY (RLS).
+  INSERT granted columns exclude created_at (defaults to now()).
+  UPDATE granted on all editable columns.
 
 ## No demo data inserted.
 */
@@ -72,6 +72,26 @@ CREATE POLICY "admin_delete_levels"
   ON public.levels FOR DELETE
   TO authenticated
   USING (public.is_admin());
+
+-- ──────────────────────────────────────────────
+-- Column-level privileges
+-- ──────────────────────────────────────────────
+REVOKE ALL ON public.levels FROM anon, authenticated;
+
+-- Public can read all columns of published levels (no sensitive data)
+GRANT SELECT (id, name, gd_level_id, difficulty, points, published, created_at)
+  ON public.levels TO anon, authenticated;
+
+-- Admin can INSERT (created_at defaults to now())
+GRANT INSERT (name, gd_level_id, difficulty, points, published)
+  ON public.levels TO authenticated;
+
+-- Admin can UPDATE all editable columns
+GRANT UPDATE (name, gd_level_id, difficulty, points, published)
+  ON public.levels TO authenticated;
+
+-- Admin can DELETE
+GRANT DELETE ON public.levels TO authenticated;
 
 -- ──────────────────────────────────────────────
 -- Indexes
