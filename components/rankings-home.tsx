@@ -12,6 +12,8 @@ export default function RankingsHome({
   subtitle,
   season,
   connectionError = false,
+  isLoggedIn = false,
+  isAdmin = false,
 }: {
   players: Player[]
   recent: Recent[]
@@ -19,6 +21,8 @@ export default function RankingsHome({
   subtitle: string
   season: string
   connectionError?: boolean
+  isLoggedIn?: boolean
+  isAdmin?: boolean
 }) {
   const [query, setQuery] = useState('')
   const [page, setPage] = useState(1)
@@ -39,6 +43,18 @@ export default function RankingsHome({
             <a href="#players" className="whitespace-nowrap hover:text-white">Players</a>
             <a href="#submit" className="whitespace-nowrap hover:text-white">Submit Record</a>
             <a href="#about" className="whitespace-nowrap hover:text-white">About</a>
+            {isLoggedIn ? (
+              <>
+                <a href="/dashboard" className="whitespace-nowrap hover:text-white">Dashboard</a>
+                {isAdmin && <a href="/admin" className="whitespace-nowrap text-[#b22222] hover:text-[#d44]">Admin</a>}
+                <a href="/logout" className="whitespace-nowrap hover:text-white">Sign out</a>
+              </>
+            ) : (
+              <>
+                <a href="/login" className="whitespace-nowrap hover:text-white">Sign in</a>
+                <a href="/register" className="whitespace-nowrap hover:text-white">Register</a>
+              </>
+            )}
           </div>
         </nav>
       </header>

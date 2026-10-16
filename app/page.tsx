@@ -1,5 +1,5 @@
 import RankingsHome, { type Player, type Recent } from '@/components/rankings-home'
-import { getPublicData } from '@/lib/supabase/server'
+import { getPublicData, getAuthUser } from '@/lib/supabase/server'
 
 export default async function Home() {
   let rankings = null
@@ -14,6 +14,9 @@ export default async function Home() {
     connectionError = true
   }
 
+  const user = await getAuthUser()
+  const isAdmin = user?.app_metadata?.['role'] === 'admin'
+
   const players: Player[] = rankings?.players ?? []
   const recent: Recent[] = rankings?.recent ?? []
 
@@ -25,6 +28,8 @@ export default async function Home() {
       subtitle={content.site_subtitle ?? 'Class 6B Geometry Dash Rankings'}
       season={content.season_label ?? 'Season 04 / Updated daily'}
       connectionError={connectionError}
+      isLoggedIn={!!user}
+      isAdmin={isAdmin}
     />
   )
 }
