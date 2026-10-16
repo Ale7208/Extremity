@@ -1,4 +1,0 @@
-minimumReleaseAgeExclude:
-  - '@next/*'
-  - next
-  - webpack@5.112.0
