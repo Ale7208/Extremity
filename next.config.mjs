@@ -9,11 +9,9 @@ const nextConfig = {
   experimental: {
     webpackBuildWorker: false,
   },
-  webpack: (config, { isServer }) => {
-    if (process.env.NODE_ENV === 'production') {
-      config.cache = false;
-      config.parallelism = 1;
-    }
+  webpack: (config) => {
+    config.cache = false;
+    config.parallelism = 1;
     return config;
   },
 }
