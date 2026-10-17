@@ -3,6 +3,19 @@ import { cookies } from 'next/headers'
 import { createClient as createJsClient } from '@supabase/supabase-js'
 
 /**
+ * Creates a cookieless Supabase client using the anon key.
+ * Used for public data queries that don't need user session info.
+ * RLS policies still enforce access control on public columns.
+ */
+export function createAnonClient() {
+  return createJsClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } },
+  )
+}
+
+/**
  * Creates a Supabase server client bound to the incoming request's user session.
  * Uses the anon key + cookies — RLS policies are enforced.
  */
@@ -68,11 +81,15 @@ export async function isAdmin(): Promise<boolean> {
  * Returns the current authenticated user, or null.
  */
 export async function getAuthUser() {
-  const supabase = await createClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  return user
+  try {
+    const supabase = await createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    return user
+  } catch {
+    return null
+  }
 }
 
 // ──────────────────────────────────────────────
@@ -99,7 +116,7 @@ export type PublicRankings = {
 }
 
 export async function getPublicRankings(): Promise<PublicRankings | null> {
-  const supabase = await createClient()
+  const supabase = createAnonClient()
   const { data, error } = await supabase
     .from('records')
     .select(
@@ -157,7 +174,7 @@ export async function getPublicRankings(): Promise<PublicRankings | null> {
 }
 
 export async function getSiteContent(): Promise<Record<string, string>> {
-  const supabase = await createClient()
+  const supabase = createAnonClient()
   const { data } = await supabase
     .from('site_content')
     .select('key, value')
@@ -168,7 +185,7 @@ export async function getSiteContent(): Promise<Record<string, string>> {
 }
 
 export async function getPublicAnnouncements() {
-  const supabase = await createClient()
+  const supabase = createAnonClient()
   const { data } = await supabase
     .from('announcements')
     .select('id, title, body, published_at')
@@ -179,7 +196,7 @@ export async function getPublicAnnouncements() {
 }
 
 export async function getPublicLevels() {
-  const supabase = await createClient()
+  const supabase = createAnonClient()
   const { data } = await supabase
     .from('levels')
     .select('id, name, gd_level_id, difficulty, points')

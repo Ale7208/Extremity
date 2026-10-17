@@ -1,6 +1,8 @@
 import RankingsHome, { type Player, type Recent } from '@/components/rankings-home'
 import { getPublicData, getAuthUser } from '@/lib/supabase/server'
 
+export const dynamic = 'force-dynamic'
+
 export default async function Home() {
   let rankings = null
   let content: Record<string, string> = {}
@@ -14,7 +16,12 @@ export default async function Home() {
     connectionError = true
   }
 
-  const user = await getAuthUser()
+  let user = null
+  try {
+    user = await getAuthUser()
+  } catch {
+    // cookies() not available (e.g. during prerender) — render as visitor
+  }
   const isAdmin = user?.app_metadata?.['role'] === 'admin'
 
   const players: Player[] = rankings?.players ?? []
