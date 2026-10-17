@@ -30,7 +30,7 @@ export default async function DashboardPage() {
       <header className="border-b border-[#292929] bg-[#0b0b0b]">
         <nav className="mx-auto flex min-h-12 max-w-[1180px] items-center justify-between gap-6 px-4 sm:px-6">
           <Link href="/" className="whitespace-nowrap text-[13px] font-semibold tracking-tight text-white">
-            6B <span className="text-[#b22222]">Demon List</span>
+            Extremity <span className="text-[#b22222]">List</span>
           </Link>
           <div className="flex items-center gap-4 text-[11px] text-[#898989]">
             <Link href="/dashboard" className="hover:text-white">Dashboard</Link>

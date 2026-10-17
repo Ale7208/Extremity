@@ -12,7 +12,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       <header className="border-b border-[#292929] bg-[#0b0b0b]">
         <nav className="mx-auto flex min-h-12 max-w-[1400px] items-center justify-between gap-6 px-4 sm:px-6">
           <Link href="/admin" className="whitespace-nowrap text-[13px] font-semibold tracking-tight text-white">
-            6B <span className="text-[#b22222]">Admin</span>
+            Extremity <span className="text-[#b22222]">Admin</span>
           </Link>
           <div className="flex items-center gap-4 overflow-x-auto text-[11px] text-[#898989]">
             <Link href="/admin" className="whitespace-nowrap hover:text-white">Overview</Link>

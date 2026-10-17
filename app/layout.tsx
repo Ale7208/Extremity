@@ -3,8 +3,8 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: '6B Demon List',
-  description: 'Class 6B Geometry Dash Rankings',
+  title: 'Extremity List',
+  description: 'Extremity Geometry Dash Rankings',
   generator: 'v0.app',
   icons: {
     icon: [

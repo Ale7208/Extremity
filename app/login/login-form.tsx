@@ -38,7 +38,7 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
     <div className="flex min-h-screen items-center justify-center bg-[#080808] px-4">
       <div className="w-full max-w-sm">
         <h1 className="mb-6 text-center text-xl font-semibold text-white">
-          Sign in to <span className="text-[#b22222]">6B Demon List</span>
+          Sign in to <span className="text-[#b22222]">Extremity List</span>
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>

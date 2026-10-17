@@ -31,8 +31,8 @@ export default async function Home() {
     <RankingsHome
       players={players}
       recent={recent}
-      title={content.site_title ?? '6B Demon List'}
-      subtitle={content.site_subtitle ?? 'Class 6B Geometry Dash Rankings'}
+      title={content.site_title ?? 'Extremity List'}
+      subtitle={content.site_subtitle ?? 'Extremity Geometry Dash Rankings'}
       season={content.season_label ?? 'Season 04 / Updated daily'}
       connectionError={connectionError}
       isLoggedIn={!!user}

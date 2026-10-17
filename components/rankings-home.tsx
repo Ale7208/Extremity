@@ -37,7 +37,7 @@ export default function RankingsHome({
     <div className="min-h-screen bg-[#080808] text-[#f1f1f1]">
       <header className="border-b border-[#292929] bg-[#0b0b0b]">
         <nav className="mx-auto flex min-h-12 max-w-[1180px] items-center justify-between gap-6 px-4 sm:px-6" aria-label="Main navigation">
-          <a href="#top" className="whitespace-nowrap text-[13px] font-semibold tracking-tight text-white">6B <span className="text-[#b22222]">Demon List</span></a>
+          <a href="#top" className="whitespace-nowrap text-[13px] font-semibold tracking-tight text-white">Extremity <span className="text-[#b22222]">List</span></a>
           <div className="flex items-center gap-4 overflow-x-auto text-[11px] text-[#898989] sm:gap-7">
             <a href="#leaderboard" className="whitespace-nowrap hover:text-white">Leaderboard</a>
             <a href="#players" className="whitespace-nowrap hover:text-white">Players</a>

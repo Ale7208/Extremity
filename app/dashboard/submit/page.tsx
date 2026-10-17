@@ -83,7 +83,7 @@ export default function SubmitRecordPage() {
       <header className="border-b border-[#292929] bg-[#0b0b0b]">
         <nav className="mx-auto flex min-h-12 max-w-[1180px] items-center justify-between gap-6 px-4 sm:px-6">
           <a href="/" className="whitespace-nowrap text-[13px] font-semibold tracking-tight text-white">
-            6B <span className="text-[#b22222]">Demon List</span>
+            Extremity <span className="text-[#b22222]">List</span>
           </a>
           <a href="/dashboard" className="text-xs text-[#898989] hover:text-white">Back to dashboard</a>
         </nav>
