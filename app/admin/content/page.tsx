@@ -10,7 +10,7 @@ export default async function AdminContentPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-semibold text-white">Content &amp; settings</h1>
+      <h1 className="mb-6 text-xl font-semibold text-white">Contenido y configuración</h1>
       <AdminContentClient
         announcements={announcements as Record<string, unknown>[]}
         content={content as Record<string, unknown>[]}

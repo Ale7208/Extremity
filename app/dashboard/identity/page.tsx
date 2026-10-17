@@ -55,7 +55,7 @@ export default function GdIdentityPage() {
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) {
-      setError('Not authenticated')
+      setError('No autenticado')
       setSubmitting(false)
       return
     }
@@ -81,7 +81,7 @@ export default function GdIdentityPage() {
         setSubmitting(false)
         return
       }
-      setSuccess('Identity updated. Place the verification token in your GD bio and wait for admin approval.')
+      setSuccess('Identidad actualizada. Coloca el token de verificación en tu biografía de GD y espera la aprobación del administrador.')
     } else {
       const { error: insertError } = await supabase.from('gd_identities').insert({
         user_id: user.id,
@@ -95,7 +95,7 @@ export default function GdIdentityPage() {
         setSubmitting(false)
         return
       }
-      setSuccess('Identity submitted. Place the verification token in your GD bio and wait for admin approval.')
+      setSuccess('Identidad enviada. Coloca el token de verificación en tu biografía de GD y espera la aprobación del administrador.')
     }
 
     setIdentity({
@@ -111,7 +111,7 @@ export default function GdIdentityPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#080808]">
-        <p className="text-sm text-[#666]">Loading…</p>
+        <p className="text-sm text-[#666]">Cargando…</p>
       </div>
     )
   }
@@ -123,32 +123,32 @@ export default function GdIdentityPage() {
           <a href="/" className="whitespace-nowrap text-[13px] font-semibold tracking-tight text-white">
             Extremity <span className="text-[#b22222]">List</span>
           </a>
-          <a href="/dashboard" className="text-xs text-[#898989] hover:text-white">Back to dashboard</a>
+          <a href="/dashboard" className="text-xs text-[#898989] hover:text-white">Volver al panel</a>
         </nav>
       </header>
 
       <main className="mx-auto max-w-[600px] px-4 py-8 sm:px-6">
-        <h1 className="mb-6 text-xl font-semibold text-white">Geometry Dash identity</h1>
+        <h1 className="mb-6 text-xl font-semibold text-white">Identidad de Geometry Dash</h1>
 
         {identity && identity.verification_status === 'verified' && (
           <div className="mb-6 border border-[#1e3a1e] bg-[#0e1a0e] px-4 py-3 text-xs text-green-500">
-            Your GD identity is verified. You can submit records and propose levels.
+            Tu identidad de GD está verificada. Puedes enviar récords y proponer niveles.
           </div>
         )}
         {identity && identity.verification_status === 'pending' && (
           <div className="mb-6 border border-[#3a3a20] bg-[#1a1a0e] px-4 py-3 text-xs text-[#c9a878]">
-            Your identity is pending verification. Place this token in your GD bio: <code className="font-mono text-[#e8c878]">{identity.verification_token}</code>
+            Tu identidad está en espera de verificación. Coloca este token en tu biografía de GD: <code className="font-mono text-[#e8c878]">{identity.verification_token}</code>
           </div>
         )}
         {identity && identity.verification_status === 'rejected' && (
           <div className="mb-6 border border-[#3a2020] bg-[#1a0e0e] px-4 py-3 text-xs text-[#c97878]">
-            Your identity was rejected. Please update your information and try again.
+            Tu identidad fue rechazada. Actualiza tu información e inténtalo de nuevo.
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs text-[#888]">GD Player ID (numeric)</label>
+            <label className="mb-1 block text-xs text-[#888]">ID de jugador GD (numérico)</label>
             <input
               type="number"
               required
@@ -158,7 +158,7 @@ export default function GdIdentityPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-[#888]">GD Player Name</label>
+            <label className="mb-1 block text-xs text-[#888]">Nombre de jugador GD</label>
             <input
               type="text"
               required
@@ -174,7 +174,7 @@ export default function GdIdentityPage() {
             disabled={submitting}
             className="bg-[#b22222] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#9a1d1d] disabled:opacity-50"
           >
-            {submitting ? 'Saving…' : identity ? 'Update identity' : 'Submit identity'}
+            {submitting ? 'Guardando…' : identity ? 'Actualizar identidad' : 'Enviar identidad'}
           </button>
         </form>
       </main>

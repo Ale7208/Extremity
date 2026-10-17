@@ -47,7 +47,7 @@ export default function SubmitRecordPage() {
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) {
-      setError('Not authenticated')
+      setError('No autenticado')
       setSubmitting(false)
       return
     }
@@ -65,7 +65,7 @@ export default function SubmitRecordPage() {
       return
     }
 
-    setSuccess('Record submitted. An admin will review it before it appears on the leaderboard.')
+    setSuccess('Récord enviado. Un administrador lo revisará antes de que aparezca en el ranking.')
     setSubmitting(false)
     setTimeout(() => router.push('/dashboard'), 2000)
   }
@@ -73,7 +73,7 @@ export default function SubmitRecordPage() {
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#080808]">
-        <p className="text-sm text-[#666]">Loading…</p>
+        <p className="text-sm text-[#666]">Cargando…</p>
       </div>
     )
   }
@@ -85,26 +85,26 @@ export default function SubmitRecordPage() {
           <a href="/" className="whitespace-nowrap text-[13px] font-semibold tracking-tight text-white">
             Extremity <span className="text-[#b22222]">List</span>
           </a>
-          <a href="/dashboard" className="text-xs text-[#898989] hover:text-white">Back to dashboard</a>
+          <a href="/dashboard" className="text-xs text-[#898989] hover:text-white">Volver al panel</a>
         </nav>
       </header>
 
       <main className="mx-auto max-w-[600px] px-4 py-8 sm:px-6">
-        <h1 className="mb-6 text-xl font-semibold text-white">Submit a record</h1>
+        <h1 className="mb-6 text-xl font-semibold text-white">Enviar un récord</h1>
 
         {levels.length === 0 ? (
-          <p className="text-sm text-[#777]">No published levels available yet. Check back later.</p>
+          <p className="text-sm text-[#777]">Aún no hay niveles publicados. Vuelve más tarde.</p>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="mb-1 block text-xs text-[#888]">Level</label>
+              <label className="mb-1 block text-xs text-[#888]">Nivel</label>
               <select
                 required
                 value={selectedLevel}
                 onChange={(e) => setSelectedLevel(e.target.value)}
                 className="w-full border border-[#303030] bg-[#111] px-3 py-2 text-sm text-white outline-none focus:border-[#555]"
               >
-                <option value="">Select a level…</option>
+                <option value="">Selecciona un nivel…</option>
                 {levels.map((level) => (
                   <option key={level.id} value={level.id}>
                     {level.name} ({level.difficulty}, {level.points} pts)
@@ -113,7 +113,7 @@ export default function SubmitRecordPage() {
               </select>
             </div>
             <div>
-              <label className="mb-1 block text-xs text-[#888]">Progress (%)</label>
+              <label className="mb-1 block text-xs text-[#888]">Progreso (%)</label>
               <input
                 type="number"
                 required
@@ -125,7 +125,7 @@ export default function SubmitRecordPage() {
               />
             </div>
             <div>
-              <label className="mb-1 block text-xs text-[#888]">Evidence URL (video or image)</label>
+              <label className="mb-1 block text-xs text-[#888]">URL de evidencia (video o imagen)</label>
               <input
                 type="url"
                 value={evidenceUrl}
@@ -141,7 +141,7 @@ export default function SubmitRecordPage() {
               disabled={submitting || !selectedLevel}
               className="bg-[#b22222] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#9a1d1d] disabled:opacity-50"
             >
-              {submitting ? 'Submitting…' : 'Submit record'}
+              {submitting ? 'Enviando…' : 'Enviar récord'}
             </button>
           </form>
         )}

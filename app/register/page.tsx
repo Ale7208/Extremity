@@ -39,7 +39,7 @@ export default function RegisterPage() {
 
       if (profileError) {
         setError(
-          'Account created but profile setup failed: ' + profileError.message,
+          'Cuenta creada pero falló la configuración del perfil: ' + profileError.message,
         )
         setLoading(false)
         return
@@ -54,11 +54,11 @@ export default function RegisterPage() {
     <div className="flex min-h-screen items-center justify-center bg-[#080808] px-4">
       <div className="w-full max-w-sm">
         <h1 className="mb-6 text-center text-xl font-semibold text-white">
-          Join <span className="text-[#b22222]">Extremity List</span>
+          Únete a <span className="text-[#b22222]">Extremity List</span>
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs text-[#888]">Display name</label>
+            <label className="mb-1 block text-xs text-[#888]">Nombre para mostrar</label>
             <input
               type="text"
               required
@@ -69,7 +69,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-[#888]">Email</label>
+            <label className="mb-1 block text-xs text-[#888]">Correo electrónico</label>
             <input
               type="email"
               required
@@ -79,7 +79,7 @@ export default function RegisterPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-[#888]">Password</label>
+            <label className="mb-1 block text-xs text-[#888]">Contraseña</label>
             <input
               type="password"
               required
@@ -95,13 +95,13 @@ export default function RegisterPage() {
             disabled={loading}
             className="w-full bg-[#b22222] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#9a1d1d] disabled:opacity-50"
           >
-            {loading ? 'Creating account…' : 'Register'}
+            {loading ? 'Creando cuenta…' : 'Registrarse'}
           </button>
         </form>
         <p className="mt-4 text-center text-xs text-[#666]">
-          Already have an account?{' '}
+          ¿Ya tienes cuenta?{' '}
           <Link href="/login" className="text-[#b22222] hover:underline">
-            Sign in
+            Inicia sesión
           </Link>
         </p>
       </div>

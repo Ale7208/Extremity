@@ -32,8 +32,8 @@ export default async function Home() {
       players={players}
       recent={recent}
       title={content.site_title ?? 'Extremity List'}
-      subtitle={content.site_subtitle ?? 'Extremity Geometry Dash Rankings'}
-      season={content.season_label ?? 'Season 04 / Updated daily'}
+      subtitle={content.site_subtitle ?? 'Ranking de Geometry Dash Extremity'}
+      season={content.season_label ?? 'Temporada 04 / Actualizado diariamente'}
       connectionError={connectionError}
       isLoggedIn={!!user}
       isAdmin={isAdmin}

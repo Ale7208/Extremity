@@ -38,11 +38,11 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
     <div className="flex min-h-screen items-center justify-center bg-[#080808] px-4">
       <div className="w-full max-w-sm">
         <h1 className="mb-6 text-center text-xl font-semibold text-white">
-          Sign in to <span className="text-[#b22222]">Extremity List</span>
+          Iniciar sesión en <span className="text-[#b22222]">Extremity List</span>
         </h1>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs text-[#888]">Email</label>
+            <label className="mb-1 block text-xs text-[#888]">Correo electrónico</label>
             <input
               type="email"
               required
@@ -52,7 +52,7 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-[#888]">Password</label>
+            <label className="mb-1 block text-xs text-[#888]">Contraseña</label>
             <input
               type="password"
               required
@@ -67,13 +67,13 @@ export default function LoginForm({ redirectTo }: { redirectTo: string }) {
             disabled={loading}
             className="w-full bg-[#b22222] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#9a1d1d] disabled:opacity-50"
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? 'Iniciando sesión…' : 'Iniciar sesión'}
           </button>
         </form>
         <p className="mt-4 text-center text-xs text-[#666]">
-          No account?{' '}
+          ¿No tienes cuenta?{' '}
           <Link href="/register" className="text-[#b22222] hover:underline">
-            Register
+            Regístrate
           </Link>
         </p>
       </div>

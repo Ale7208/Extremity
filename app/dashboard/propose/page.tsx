@@ -23,7 +23,7 @@ export default function ProposeLevelPage() {
       data: { user },
     } = await supabase.auth.getUser()
     if (!user) {
-      setError('Not authenticated')
+      setError('No autenticado')
       setSubmitting(false)
       return
     }
@@ -40,7 +40,7 @@ export default function ProposeLevelPage() {
       return
     }
 
-    setSuccess('Level proposed. An admin will review it.')
+    setSuccess('Nivel propuesto. Un administrador lo revisará.')
     setSubmitting(false)
     setTimeout(() => router.push('/dashboard'), 2000)
   }
@@ -52,16 +52,16 @@ export default function ProposeLevelPage() {
           <a href="/" className="whitespace-nowrap text-[13px] font-semibold tracking-tight text-white">
             Extremity <span className="text-[#b22222]">List</span>
           </a>
-          <a href="/dashboard" className="text-xs text-[#898989] hover:text-white">Back to dashboard</a>
+          <a href="/dashboard" className="text-xs text-[#898989] hover:text-white">Volver al panel</a>
         </nav>
       </header>
 
       <main className="mx-auto max-w-[600px] px-4 py-8 sm:px-6">
-        <h1 className="mb-6 text-xl font-semibold text-white">Propose a level</h1>
+        <h1 className="mb-6 text-xl font-semibold text-white">Proponer un nivel</h1>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-xs text-[#888]">Level name</label>
+            <label className="mb-1 block text-xs text-[#888]">Nombre del nivel</label>
             <input
               type="text"
               required
@@ -71,7 +71,7 @@ export default function ProposeLevelPage() {
             />
           </div>
           <div>
-            <label className="mb-1 block text-xs text-[#888]">GD Level ID (numeric)</label>
+            <label className="mb-1 block text-xs text-[#888]">ID de nivel GD (numérico)</label>
             <input
               type="number"
               required
@@ -87,7 +87,7 @@ export default function ProposeLevelPage() {
             disabled={submitting}
             className="bg-[#b22222] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#9a1d1d] disabled:opacity-50"
           >
-            {submitting ? 'Submitting…' : 'Propose level'}
+            {submitting ? 'Enviando…' : 'Proponer nivel'}
           </button>
         </form>
       </main>

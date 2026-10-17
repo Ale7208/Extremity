@@ -28,7 +28,7 @@ export default function AdminIdentitiesClient({ identities }: { identities: Iden
       body: JSON.stringify({ identityId, action }),
     })
     const json = await res.json()
-    if (!res.ok) setError(json.error ?? 'Failed')
+    if (!res.ok) setError(json.error ?? 'Error')
     else setTimeout(() => window.location.reload(), 500)
     setLoading(null)
   }
@@ -41,17 +41,17 @@ export default function AdminIdentitiesClient({ identities }: { identities: Iden
         <table className="w-full min-w-[800px] border-collapse text-left text-[12px]">
           <thead className="border-b border-[#292929] bg-[#151515] text-[10px] uppercase tracking-[0.12em] text-[#686868]">
             <tr>
-              <th className="px-4 py-2.5 font-medium">GD Name</th>
-              <th className="px-4 py-2.5 font-medium">GD ID</th>
+              <th className="px-4 py-2.5 font-medium">Nombre GD</th>
+              <th className="px-4 py-2.5 font-medium">ID GD</th>
               <th className="px-4 py-2.5 font-medium">Token</th>
-              <th className="px-4 py-2.5 font-medium">Status</th>
-              <th className="px-4 py-2.5 font-medium">Notes</th>
-              <th className="px-4 py-2.5 font-medium">Actions</th>
+              <th className="px-4 py-2.5 font-medium">Estado</th>
+              <th className="px-4 py-2.5 font-medium">Notas</th>
+              <th className="px-4 py-2.5 font-medium">Acciones</th>
             </tr>
           </thead>
           <tbody>
             {identities.length === 0 ? (
-              <tr><td colSpan={6} className="px-4 py-6 text-center text-[#666]">No identities.</td></tr>
+              <tr><td colSpan={6} className="px-4 py-6 text-center text-[#666]">No hay identidades.</td></tr>
             ) : (
               identities.map((id) => (
                 <tr key={id.id} className="border-b border-[#242424] last:border-0">
@@ -68,14 +68,14 @@ export default function AdminIdentitiesClient({ identities }: { identities: Iden
                           disabled={loading === id.id + 'verify'}
                           className="border border-[#1e3a1e] bg-[#0e1a0e] px-2 py-1 text-[10px] text-green-500 hover:bg-[#142a14] disabled:opacity-50"
                         >
-                          {loading === id.id + 'verify' ? '…' : 'Verify'}
+                          {loading === id.id + 'verify' ? '…' : 'Verificar'}
                         </button>
                         <button
                           onClick={() => handleAction(id.id, 'reject')}
                           disabled={loading === id.id + 'reject'}
                           className="border border-[#3a2020] bg-[#1a0e0e] px-2 py-1 text-[10px] text-[#c97878] hover:bg-[#241414] disabled:opacity-50"
                         >
-                          {loading === id.id + 'reject' ? '…' : 'Reject'}
+                          {loading === id.id + 'reject' ? '…' : 'Rechazar'}
                         </button>
                       </div>
                     )}

@@ -33,27 +33,27 @@ export default async function DashboardPage() {
             Extremity <span className="text-[#b22222]">List</span>
           </Link>
           <div className="flex items-center gap-4 text-[11px] text-[#898989]">
-            <Link href="/dashboard" className="hover:text-white">Dashboard</Link>
-            <Link href="/dashboard/identity" className="hover:text-white">GD Identity</Link>
-            <Link href="/dashboard/submit" className="hover:text-white">Submit Record</Link>
-            <Link href="/dashboard/propose" className="hover:text-white">Propose Level</Link>
-            <a href="/logout" className="text-[#b22222] hover:underline">Sign out</a>
+            <Link href="/dashboard" className="hover:text-white">Panel</Link>
+            <Link href="/dashboard/identity" className="hover:text-white">Identidad GD</Link>
+            <Link href="/dashboard/submit" className="hover:text-white">Enviar récord</Link>
+            <Link href="/dashboard/propose" className="hover:text-white">Proponer nivel</Link>
+            <a href="/logout" className="text-[#b22222] hover:underline">Cerrar sesión</a>
           </div>
         </nav>
       </header>
 
       <main className="mx-auto max-w-[1180px] px-4 py-8 sm:px-6">
-        <h1 className="mb-6 text-xl font-semibold text-white">Your dashboard</h1>
+        <h1 className="mb-6 text-xl font-semibold text-white">Tu panel</h1>
 
         {/* Profile card */}
         <section className="mb-8 border border-[#292929] bg-[#111] p-5">
-          <h2 className="mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-[#a5a5a5]">Profile</h2>
+          <h2 className="mb-3 text-[11px] font-medium uppercase tracking-[0.14em] text-[#a5a5a5]">Perfil</h2>
           <div className="flex items-center gap-4">
             <div>
-              <p className="text-sm font-medium text-white">{(profile as Profile)?.display_name ?? 'Not set'}</p>
+              <p className="text-sm font-medium text-white">{(profile as Profile)?.display_name ?? 'Sin establecer'}</p>
               <p className="text-xs text-[#777]">{user.email}</p>
               {(profile as Profile)?.suspended && (
-                <p className="mt-1 text-xs text-[#c97878]">Your account is suspended. You cannot submit records.</p>
+                <p className="mt-1 text-xs text-[#c97878]">Tu cuenta está suspendida. No puedes enviar récords.</p>
               )}
             </div>
           </div>
@@ -62,13 +62,13 @@ export default async function DashboardPage() {
         {/* GD Identity status */}
         <section className="mb-8 border border-[#292929] bg-[#111] p-5">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#a5a5a5]">Geometry Dash identity</h2>
+            <h2 className="text-[11px] font-medium uppercase tracking-[0.14em] text-[#a5a5a5]">Identidad de Geometry Dash</h2>
             <Link href="/dashboard/identity" className="text-xs text-[#b22222] hover:underline">
-              {gdIdentity ? 'Manage' : 'Set up'}
+              {gdIdentity ? 'Administrar' : 'Configurar'}
             </Link>
           </div>
           {!gdIdentity && (
-            <p className="text-xs text-[#777]">No GD identity linked. You must verify your GD account before submitting records.</p>
+            <p className="text-xs text-[#777]">No hay identidad GD vinculada. Debes verificar tu cuenta de GD antes de enviar récords.</p>
           )}
           {gdIdentity && (
             <div className="space-y-1">
@@ -76,7 +76,7 @@ export default async function DashboardPage() {
                 {gdIdentity.gd_player_name} <span className="text-[#555]">(ID: {gdIdentity.gd_player_id})</span>
               </p>
               <p className={`text-xs ${isVerified ? 'text-green-500' : isPending ? 'text-[#c9a878]' : 'text-[#c97878]'}`}>
-                Status: {gdIdentity.verification_status}
+                Estado: {gdIdentity.verification_status}
               </p>
             </div>
           )}
@@ -90,9 +90,9 @@ export default async function DashboardPage() {
               !isVerified ? 'pointer-events-none opacity-40' : ''
             }`}
           >
-            <h3 className="text-sm font-medium text-white">Submit a record</h3>
+            <h3 className="text-sm font-medium text-white">Enviar un récord</h3>
             <p className="mt-1 text-xs text-[#777]">
-              {isVerified ? 'Submit your progress on a published level.' : 'Verify your GD identity first.'}
+              {isVerified ? 'Envía tu progreso en un nivel publicado.' : 'Verifica tu identidad de GD primero.'}
             </p>
           </Link>
           <Link
@@ -101,41 +101,41 @@ export default async function DashboardPage() {
               !isVerified ? 'pointer-events-none opacity-40' : ''
             }`}
           >
-            <h3 className="text-sm font-medium text-white">Propose a level</h3>
+            <h3 className="text-sm font-medium text-white">Proponer un nivel</h3>
             <p className="mt-1 text-xs text-[#777]">
-              {isVerified ? 'Suggest a new level for the list.' : 'Verify your GD identity first.'}
+              {isVerified ? 'Sugiere un nivel nuevo para la lista.' : 'Verifica tu identidad de GD primero.'}
             </p>
           </Link>
         </section>
 
         {/* My records */}
         <section className="mb-8">
-          <h2 className="mb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-[#a5a5a5]">My records</h2>
+          <h2 className="mb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-[#a5a5a5]">Mis récords</h2>
           <div className="overflow-x-auto border border-[#292929] bg-[#111]">
             <table className="w-full min-w-[500px] border-collapse text-left text-[12px]">
               <thead className="border-b border-[#292929] bg-[#151515] text-[10px] uppercase tracking-[0.12em] text-[#686868]">
                 <tr>
-                  <th className="px-4 py-2.5 font-medium">Level</th>
-                  <th className="px-4 py-2.5 font-medium">Progress</th>
-                  <th className="px-4 py-2.5 font-medium">Status</th>
-                  <th className="px-4 py-2.5 font-medium">Submitted</th>
+                  <th className="px-4 py-2.5 font-medium">Nivel</th>
+                  <th className="px-4 py-2.5 font-medium">Progreso</th>
+                  <th className="px-4 py-2.5 font-medium">Estado</th>
+                  <th className="px-4 py-2.5 font-medium">Enviado</th>
                 </tr>
               </thead>
               <tbody>
                 {records.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-[#666]">No records submitted yet.</td>
+                    <td colSpan={4} className="px-4 py-6 text-center text-[#666]">Aún no has enviado récords.</td>
                   </tr>
                 ) : (
                   records.map((r: Record<string, unknown>) => {
-                    const levelName = (r as { levels?: { name?: string } })?.levels?.name ?? 'Unknown level'
+                    const levelName = (r as { levels?: { name?: string } })?.levels?.name ?? 'Nivel desconocido'
                     return (
                       <tr key={r.id as string} className="border-b border-[#242424] last:border-0">
                         <td className="px-4 py-3 text-[#ddd]">{levelName}</td>
                         <td className="px-4 py-3 text-[#b22222]">{r.progress as number}%</td>
                         <td className="px-4 py-3 text-[#8c8c8c]">{r.status as string}</td>
                         <td className="px-4 py-3 text-[#5f5f5f]">
-                          {new Date(r.created_at as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          {new Date(r.created_at as string).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' })}
                         </td>
                       </tr>
                     )
@@ -148,21 +148,21 @@ export default async function DashboardPage() {
 
         {/* My proposals */}
         <section>
-          <h2 className="mb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-[#a5a5a5]">My level proposals</h2>
+          <h2 className="mb-2 text-[11px] font-medium uppercase tracking-[0.14em] text-[#a5a5a5]">Mis propuestas de nivel</h2>
           <div className="overflow-x-auto border border-[#292929] bg-[#111]">
             <table className="w-full min-w-[500px] border-collapse text-left text-[12px]">
               <thead className="border-b border-[#292929] bg-[#151515] text-[10px] uppercase tracking-[0.12em] text-[#686868]">
                 <tr>
-                  <th className="px-4 py-2.5 font-medium">Name</th>
-                  <th className="px-4 py-2.5 font-medium">GD Level ID</th>
-                  <th className="px-4 py-2.5 font-medium">Status</th>
-                  <th className="px-4 py-2.5 font-medium">Submitted</th>
+                  <th className="px-4 py-2.5 font-medium">Nombre</th>
+                  <th className="px-4 py-2.5 font-medium">ID de nivel GD</th>
+                  <th className="px-4 py-2.5 font-medium">Estado</th>
+                  <th className="px-4 py-2.5 font-medium">Enviado</th>
                 </tr>
               </thead>
               <tbody>
                 {proposals.length === 0 ? (
                   <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-[#666]">No proposals submitted yet.</td>
+                    <td colSpan={4} className="px-4 py-6 text-center text-[#666]">Aún no has enviado propuestas.</td>
                   </tr>
                 ) : (
                   proposals.map((p: Record<string, unknown>) => (
@@ -171,7 +171,7 @@ export default async function DashboardPage() {
                       <td className="px-4 py-3 text-[#8c8c8c]">{p.gd_level_id as number}</td>
                       <td className="px-4 py-3 text-[#8c8c8c]">{p.status as string}</td>
                       <td className="px-4 py-3 text-[#5f5f5f]">
-                        {new Date(p.created_at as string).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {new Date(p.created_at as string).toLocaleDateString('es-MX', { month: 'short', day: 'numeric' })}
                       </td>
                     </tr>
                   ))

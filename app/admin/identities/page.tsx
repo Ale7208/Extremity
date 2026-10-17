@@ -5,7 +5,7 @@ export default async function AdminIdentitiesPage() {
   const identities = await getAdminGdIdentities()
   return (
     <div>
-      <h1 className="mb-6 text-xl font-semibold text-white">GD identities</h1>
+      <h1 className="mb-6 text-xl font-semibold text-white">Identidades de GD</h1>
       <AdminIdentitiesClient identities={identities as Record<string, unknown>[]} />
     </div>
   )

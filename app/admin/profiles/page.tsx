@@ -5,7 +5,7 @@ export default async function AdminProfilesPage() {
   const profiles = await getAdminProfiles()
   return (
     <div>
-      <h1 className="mb-6 text-xl font-semibold text-white">Profiles</h1>
+      <h1 className="mb-6 text-xl font-semibold text-white">Perfiles</h1>
       <AdminProfilesClient profiles={profiles as Record<string, unknown>[]} />
     </div>
   )

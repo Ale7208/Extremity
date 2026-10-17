@@ -15,16 +15,16 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             Extremity <span className="text-[#b22222]">Admin</span>
           </Link>
           <div className="flex items-center gap-4 overflow-x-auto text-[11px] text-[#898989]">
-            <Link href="/admin" className="whitespace-nowrap hover:text-white">Overview</Link>
-            <Link href="/admin/records" className="whitespace-nowrap hover:text-white">Records</Link>
-            <Link href="/admin/levels" className="whitespace-nowrap hover:text-white">Levels</Link>
-            <Link href="/admin/proposals" className="whitespace-nowrap hover:text-white">Proposals</Link>
-            <Link href="/admin/identities" className="whitespace-nowrap hover:text-white">Identities</Link>
-            <Link href="/admin/profiles" className="whitespace-nowrap hover:text-white">Profiles</Link>
-            <Link href="/admin/content" className="whitespace-nowrap hover:text-white">Content</Link>
-            <Link href="/admin/audit" className="whitespace-nowrap hover:text-white">Audit Log</Link>
-            <a href="/" className="whitespace-nowrap text-[#555] hover:text-white">View site</a>
-            <a href="/logout" className="text-[#b22222] hover:underline">Sign out</a>
+            <Link href="/admin" className="whitespace-nowrap hover:text-white">Resumen</Link>
+            <Link href="/admin/records" className="whitespace-nowrap hover:text-white">Récords</Link>
+            <Link href="/admin/levels" className="whitespace-nowrap hover:text-white">Niveles</Link>
+            <Link href="/admin/proposals" className="whitespace-nowrap hover:text-white">Propuestas</Link>
+            <Link href="/admin/identities" className="whitespace-nowrap hover:text-white">Identidades</Link>
+            <Link href="/admin/profiles" className="whitespace-nowrap hover:text-white">Perfiles</Link>
+            <Link href="/admin/content" className="whitespace-nowrap hover:text-white">Contenido</Link>
+            <Link href="/admin/audit" className="whitespace-nowrap hover:text-white">Registro de auditoría</Link>
+            <a href="/" className="whitespace-nowrap text-[#555] hover:text-white">Ver sitio</a>
+            <a href="/logout" className="text-[#b22222] hover:underline">Cerrar sesión</a>
           </div>
         </nav>
       </header>

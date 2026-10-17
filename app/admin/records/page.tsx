@@ -9,7 +9,7 @@ export default async function AdminRecordsPage() {
 
   return (
     <div>
-      <h1 className="mb-6 text-xl font-semibold text-white">Records</h1>
+      <h1 className="mb-6 text-xl font-semibold text-white">Récords</h1>
       <AdminRecordsClient pending={pending as Record<string, unknown>[]} all={all as Record<string, unknown>[]} />
     </div>
   )
