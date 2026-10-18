@@ -266,8 +266,8 @@ export async function getUserRecords(userId: string) {
 
 export async function getAdminLevels() {
   const admin = createAdminClient()
-  if (!admin) return []
-  const { data } = await admin
+  const client = admin ?? (await createClient())
+  const { data } = await client
     .from('levels')
     .select('id, name, gd_level_id, difficulty, points, published, created_at')
     .order('points', { ascending: false })
@@ -276,8 +276,8 @@ export async function getAdminLevels() {
 
 export async function getAdminProfiles() {
   const admin = createAdminClient()
-  if (!admin) return []
-  const { data } = await admin
+  const client = admin ?? (await createClient())
+  const { data } = await client
     .from('profiles')
     .select('id, display_name, badges, suspended, created_at')
     .order('display_name')
@@ -286,8 +286,8 @@ export async function getAdminProfiles() {
 
 export async function getAdminAllAnnouncements() {
   const admin = createAdminClient()
-  if (!admin) return []
-  const { data } = await admin
+  const client = admin ?? (await createClient())
+  const { data } = await client
     .from('announcements')
     .select('id, title, body, published, published_at, sort_order, created_at')
     .order('sort_order')
@@ -296,8 +296,8 @@ export async function getAdminAllAnnouncements() {
 
 export async function getAdminContentRows() {
   const admin = createAdminClient()
-  if (!admin) return []
-  const { data } = await admin
+  const client = admin ?? (await createClient())
+  const { data } = await client
     .from('site_content')
     .select('key, value, published, updated_at')
     .order('key')
@@ -306,8 +306,8 @@ export async function getAdminContentRows() {
 
 export async function getAdminSettings() {
   const admin = createAdminClient()
-  if (!admin) return []
-  const { data } = await admin
+  const client = admin ?? (await createClient())
+  const { data } = await client
     .from('site_settings')
     .select('key, value, updated_at')
     .order('key')
@@ -316,8 +316,8 @@ export async function getAdminSettings() {
 
 export async function getAdminAuditLog() {
   const admin = createAdminClient()
-  if (!admin) return []
-  const { data } = await admin
+  const client = admin ?? (await createClient())
+  const { data } = await client
     .from('admin_audit_log')
     .select('id, actor_id, action, entity, entity_id, changes, created_at')
     .order('created_at', { ascending: false })
@@ -327,8 +327,8 @@ export async function getAdminAuditLog() {
 
 export async function getAdminPendingRecords() {
   const admin = createAdminClient()
-  if (!admin) return []
-  const { data } = await admin
+  const client = admin ?? (await createClient())
+  const { data } = await client
     .from('records')
     .select(
       'id, player_id, level_id, level_proposal_id, progress, evidence_url, notes, status, reviewer_id, reviewed_at, created_at, profiles(display_name), levels(name, points)',
@@ -340,8 +340,8 @@ export async function getAdminPendingRecords() {
 
 export async function getAdminAllRecords() {
   const admin = createAdminClient()
-  if (!admin) return []
-  const { data } = await admin
+  const client = admin ?? (await createClient())
+  const { data } = await client
     .from('records')
     .select(
       'id, player_id, level_id, level_proposal_id, progress, evidence_url, notes, status, reviewer_id, reviewed_at, created_at, profiles(display_name), levels(name, points)',
@@ -353,8 +353,8 @@ export async function getAdminAllRecords() {
 
 export async function getAdminGdIdentities() {
   const admin = createAdminClient()
-  if (!admin) return []
-  const { data } = await admin
+  const client = admin ?? (await createClient())
+  const { data } = await client
     .from('gd_identities')
     .select(
       'id, user_id, gd_player_id, gd_player_name, verification_token, verification_status, verified_at, verified_by, notes, created_at, updated_at',
@@ -365,8 +365,8 @@ export async function getAdminGdIdentities() {
 
 export async function getAdminLevelProposals() {
   const admin = createAdminClient()
-  if (!admin) return []
-  const { data } = await admin
+  const client = admin ?? (await createClient())
+  const { data } = await client
     .from('level_proposals')
     .select(
       'id, proposed_by, name, gd_level_id, status, reviewed_by, reviewed_at, notes, created_at',
@@ -399,8 +399,8 @@ export async function writeAudit(
   changes: Record<string, unknown>,
 ) {
   const admin = createAdminClient()
-  if (!admin) return
-  await admin.from('admin_audit_log').insert({
+  const client = admin ?? (await createClient())
+  await client.from('admin_audit_log').insert({
     actor_id: actorId,
     action,
     entity,
