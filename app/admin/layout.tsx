@@ -1,11 +1,12 @@
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
-import { getAuthUser } from '@/lib/supabase/server'
+import { getAuthUser, isAdmin } from '@/lib/supabase/server'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthUser()
   if (!user) redirect('/login?redirect=/admin')
-  if (user.app_metadata?.['role'] !== 'admin') redirect('/dashboard')
+  const admin = await isAdmin()
+  if (!admin) redirect('/dashboard')
 
   return (
     <div className="min-h-screen bg-[#080808] text-[#f1f1f1]">

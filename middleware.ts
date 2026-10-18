@@ -42,10 +42,12 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl)
   }
 
-  // Admin routes require admin role
+  // Admin routes require admin role — verify via database function
   if (pathname.startsWith('/admin')) {
-    const role = user.app_metadata?.['role']
-    if (role !== 'admin') {
+    const { data: isAdmin } = await supabase.rpc('check_is_admin', {
+      p_user_id: user.id,
+    })
+    if (!isAdmin) {
       const redirectUrl = request.nextUrl.clone()
       redirectUrl.pathname = '/dashboard'
       return NextResponse.redirect(redirectUrl)

@@ -1,5 +1,5 @@
 import RankingsHome, { type Player, type Recent } from '@/components/rankings-home'
-import { getPublicData, getAuthUser } from '@/lib/supabase/server'
+import { getPublicData, getAuthUser, isAdmin } from '@/lib/supabase/server'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +22,14 @@ export default async function Home() {
   } catch {
     // cookies() not available (e.g. during prerender) — render as visitor
   }
-  const isAdmin = user?.app_metadata?.['role'] === 'admin'
+  let userIsAdmin = false
+  if (user) {
+    try {
+      userIsAdmin = await isAdmin()
+    } catch {
+      // ignore — render as non-admin
+    }
+  }
 
   const players: Player[] = rankings?.players ?? []
   const recent: Recent[] = rankings?.recent ?? []
@@ -36,7 +43,7 @@ export default async function Home() {
       season={content.season_label ?? 'Temporada 04 / Actualizado diariamente'}
       connectionError={connectionError}
       isLoggedIn={!!user}
-      isAdmin={isAdmin}
+      isAdmin={userIsAdmin}
     />
   )
 }

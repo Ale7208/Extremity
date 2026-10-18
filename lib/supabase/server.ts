@@ -63,8 +63,10 @@ export function createAdminClient() {
 }
 
 /**
- * Checks if the current request's user is an admin by reading app_metadata.role
- * from the JWT via Supabase auth.getUser(). This is validated server-side.
+ * Checks if the current request's user is an admin by calling the database
+ * function check_is_admin(), which reads raw_app_meta_data from auth.users
+ * using a SECURITY DEFINER function. This is the authoritative source —
+ * app_metadata in the JWT may be stale or missing the role field.
  * Returns false if no session or if the role is not 'admin'.
  */
 export async function isAdmin(): Promise<boolean> {
@@ -73,8 +75,8 @@ export async function isAdmin(): Promise<boolean> {
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) return false
-  const role = user.app_metadata?.['role']
-  return role === 'admin'
+  const { data } = await supabase.rpc('check_is_admin', { p_user_id: user.id })
+  return data === true
 }
 
 /**
